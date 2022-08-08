@@ -73,6 +73,8 @@ class PrettyCsvDiff:
             pk_a = self._get_pk(self._data_a[i]) if i < len(self._data_a) else [AlwaysGreater()]
             pk_b = self._get_pk(self._data_b[j]) if j < len(self._data_b) else [AlwaysGreater()]
 
+            align_types(pk_a, pk_b)
+
             next_a = pk_a < pk_b
             next_b = pk_a > pk_b
             next_ab = pk_a == pk_b
@@ -107,3 +109,19 @@ class AlwaysGreater:
 
     def __eq__(self, other):
         return False
+
+
+def align_types(pk_a, pk_b):
+    if isinstance(pk_a[0], AlwaysGreater) or isinstance(pk_b[0], AlwaysGreater):
+        return pk_a, pk_b
+
+    converters = []
+    for a, b in zip(map(type, pk_a), map(type, pk_b)):
+        if a is str or b is str:
+            converters.append(str)
+        else:
+            converters.append(lambda x: x)
+
+    for i, c in enumerate(converters):
+        pk_a[i] = str(pk_a[i])
+        pk_b[i] = str(pk_b[i])
