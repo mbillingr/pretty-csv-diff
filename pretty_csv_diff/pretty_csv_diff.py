@@ -29,7 +29,7 @@ class PrettyCsvDiff:
             if self._header is None:
                 self._header = next(reader)
                 self._maxlen = list(map(len, self._header))
-                self._pks = [int(pk) if pk.isdecimal() else self._header.index(pk) for pk in self._pks]
+                self._pks = [int(pk) if pk.isdecimal() else self._header.index(pk) for pk in self._pks if pk in self._header]
             else:
                 next(reader)
 
@@ -112,8 +112,11 @@ class AlwaysGreater:
 
 
 def align_types(pk_a, pk_b):
-    if isinstance(pk_a[0], AlwaysGreater) or isinstance(pk_b[0], AlwaysGreater):
-        return pk_a, pk_b
+    try:
+        if isinstance(pk_a[0], AlwaysGreater) or isinstance(pk_b[0], AlwaysGreater):
+            return
+    except IndexError:
+        return
 
     converters = []
     for a, b in zip(map(type, pk_a), map(type, pk_b)):
